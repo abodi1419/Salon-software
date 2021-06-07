@@ -91,7 +91,19 @@
 
                             <div class="form-group row mb-0 text-center">
                                 <div class="col-6">
+                                    <div class="form-group row">
+                                        <label for="discount" class="col-md-4 col-form-label text-md-right">{{ __('Discount') }}</label>
 
+                                        <div class="col-md-6">
+                                            <input id="discount" min="0" max="100" onchange="setDiscount(this)" type="number" class="form-control @error('discount') is-invalid @enderror" name="discount" value="{{0 }}" autofocus>
+
+                                            @error('discount')
+                                            <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                            @enderror
+                                        </div>
+                                    </div>
                                     <div class="form-group row">
                                         <label for="vendor" class="col-md-4 col-form-label text-md-right">{{ __('Vendor') }}</label>
 
@@ -203,10 +215,10 @@
                     "</div>" +
                     "<input type='text' id='product"+(++prodCounter)+"' name='product"+prodCounter+"' value='"+"p_-"+array[i].id+"-"+array[i].price+"-"+array[i].quantity+"' hidden>"+
                     "</td>";
-                total+=(array[i].price)*(array[i].quantity);
+
                 invoice.innerHTML+="<tr>"+tr+"</tr>"
             }
-            setTotal();
+            calcTotal()
         }
 
         function deleteAllProducts() {
@@ -215,7 +227,19 @@
             counter=1;
             setTotal();
         }
+        function setDiscount(event) {
+            calcTotal()
 
+
+        }
+        function calcTotal() {
+            total=0
+            for(let i=0;i<array.length;i++){
+                total+=(array[i].price)*(array[i].quantity);
+            }
+            total-=total*(parseFloat(document.getElementById('discount').value)/100)
+            setTotal()
+        }
 
         function save() {
             totalInput.disabled=false;

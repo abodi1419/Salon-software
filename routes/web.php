@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Employee;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,9 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', 'App\Http\Controllers\HomeController@index');
 
 Auth::routes();
 
@@ -27,4 +26,9 @@ Route::resource('purchase_invoices','App\Http\Controllers\PurchaseInvoiceControl
 Route::resource('sale_invoices','App\Http\Controllers\SaleInvoiceController');
 Route::post('job_title/store','App\Http\Controllers\JobTitleController@store');
 Route::get('job_title/create','App\Http\Controllers\JobTitleController@create');
+Route::post('employees/calc_commissions','App\Http\Controllers\EmployeeController@calcCommissions');
+Route::get('stocking','App\Http\Controllers\Stocking@index');
+Route::post('stocking/get_stocking','App\Http\Controllers\Stocking@getStocking');
+Route::get('stocking/view/{fromDate}/{fromTime}/{toDate}/{toTime}','App\Http\Controllers\Stocking@view');
+
 

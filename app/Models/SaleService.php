@@ -8,8 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class SaleService extends Model
 {
     use HasFactory;
-    protected $fillable = ['sale_invoice_id','price','service_id','quantity','employee_id'];
-    public $timestamps = false;
+    protected $fillable = ['sale_invoice_id','price','service_id','quantity','employee_id','after_discount','state'];
 
     public function service(){
         return $this->hasOne(Service::class,'id','service_id');

@@ -112,8 +112,21 @@
 
                             <div class="form-group row mb-0 text-center">
                                 <div class="col-6">
-
                                     <div class="form-group row">
+                                        <label for="discount" class="col-md-4 col-form-label text-md-right">{{ __('Discount') }}</label>
+
+                                        <div class="col-md-6">
+                                            <input id="discount" min="0" max="100" onchange="setDiscount(this)" type="number" class="form-control @error('discount') is-invalid @enderror" name="discount" value="{{$purchaseInvoice['discount'] }}" autofocus>
+
+                                            @error('discount')
+                                            <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+
                                         <label for="vendor" class="col-md-4 col-form-label text-md-right">{{ __('Vendor') }}</label>
 
                                         <div class="col-md-6">
@@ -149,16 +162,20 @@
                                     </div>
                                     <div class="align-center">
                                         <button type="submit" class="btn btn-primary mr-2 mt-5" onclick="update()">
-                                            {{ __('Update') }}
+                                            {{ __('Create') }}
+                                        </button>
+                                        <button type="submit" class="btn btn-primary mr-2 mt-5" onclick="save()">
+                                            {{ __('Save') }}
                                         </button>
                                     </div>
+
                                 </div>
                             </div>
                         </form>
-                        <form action="{{route('purchase_invoices.destroy',$purchaseInvoice)}}" method="POST">
+                        <form action="{{route('purchase_invoices.destroy',$purchaseInvoice)}}" method="POST" class="text-center">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-primary mt-5" >
+                            <button type="submit" class="btn btn-danger align-center">
                                 {{ __('Cancel') }}
                             </button>
                         </form>
@@ -225,6 +242,19 @@
             array.splice(event, 1);
             generateCells();
         }
+        function setDiscount(event) {
+            calcTotal()
+
+
+        }
+        function calcTotal() {
+            total=0
+            for(let i=0;i<array.length;i++){
+                total+=(array[i].price)*(array[i].quantity);
+            }
+            total-=total*(parseFloat(document.getElementById('discount').value)/100)
+            setTotal()
+        }
         function generateCells() {
             invoice.innerHTML="";
             total=0;
@@ -246,10 +276,9 @@
                     "</div>" +
                     "<input type='text' id='product"+(++prodCounter)+"' name='product"+prodCounter+"' value='"+'p_-'+array[i].id+"-"+array[i].price+"-"+array[i].quantity+"' hidden>"+
                     "</td>";
-                total+=(array[i].price)*(array[i].quantity);
                 invoice.innerHTML+="<tr>"+tr+"</tr>"
             }
-            setTotal();
+            calcTotal();
         }
 
         function deleteAllProducts() {
@@ -286,6 +315,10 @@
         function update() {
             totalInput.disabled=false;
             invoice.innerHTML+="<input type='number' name='state' id='state' value='1' hidden >";
+        }
+        function save() {
+            totalInput.disabled=false;
+            invoice.innerHTML+="<input type='number' name='state' id='state' value='0' hidden >";
         }
 
 

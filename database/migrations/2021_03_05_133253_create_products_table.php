@@ -19,6 +19,7 @@ class CreateProductsTable extends Migration
             $table->decimal('price');
             $table->unsignedInteger('quantity')->default(0);
             $table->text('notes')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

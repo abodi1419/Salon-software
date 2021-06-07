@@ -16,7 +16,7 @@ class CreateSaleProductsTable extends Migration
         Schema::create('sale_products', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('sale_invoice_id');
-            $table->foreign('sale_invoice_id')->references('id')->on('sale_invoices');
+            $table->foreign('sale_invoice_id')->references('id')->on('sale_invoices')->onDelete('cascade');
             $table->unsignedBigInteger('product_id');
             $table->foreign('product_id')->references('id')->on('products');
             $table->decimal('price');

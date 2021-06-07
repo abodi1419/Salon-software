@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Gate;
+use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
@@ -13,10 +15,21 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
-        $products = Product::all();
-        return view('products.index',compact('products'));
+
+
+
+        if(Gate::allows('product',Auth::user())) {
+            $products = Product::all();
+            return view('products.index', compact('products'));
+        }
     }
 
     /**
@@ -26,7 +39,11 @@ class ProductController extends Controller
      */
     public function create()
     {
-        return view('products.create');
+        if(Gate::allows('product_create',Auth::user())) {
+
+            return view('products.create');
+        }
+
     }
 
     /**
@@ -37,13 +54,16 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => ['required','string','max:255'],
-            'price' => ['required','numeric']
-        ]);
+        if(Gate::allows('product_create',Auth::user())) {
 
-        Product::create($request->all());
-        return redirect()->back()->with('success','Success');
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'price' => ['required', 'numeric']
+            ]);
+
+            Product::create($request->all());
+            return redirect()->back()->with('success', 'Success');
+        }
     }
 
     /**
@@ -54,7 +74,9 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        //
+        if(Gate::allows('product_edit',Auth::user())) {
+
+        }
     }
 
     /**
@@ -65,7 +87,10 @@ class ProductController extends Controller
      */
     public function edit(Product $product)
     {
-        return view('products.edit',compact('product'));
+        if(Gate::allows('product_edit',Auth::user())) {
+
+            return view('products.edit',compact('product'));
+        }
     }
 
     /**
@@ -77,13 +102,16 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $request->validate([
-            'name' => ['required','string','max:255'],
-            'price' => ['required','numeric']
-        ]);
+        if(Gate::allows('product_edit',Auth::user())) {
+            $request->validate([
+                'name' => ['required','string','max:255'],
+                'price' => ['required','numeric']
+            ]);
 
-        $product->update($request->all());
-        return redirect()->back()->with('success','Success');
+            $product->update($request->all());
+            return redirect()->back()->with('success','Success');
+        }
+
     }
 
     /**
@@ -94,6 +122,9 @@ class ProductController extends Controller
      */
     public function destroy(Product $product)
     {
+        if(Gate::allows('product_delete',Auth::user())) {
+
+        }
 
     }
 }

@@ -47,11 +47,11 @@
                                 <label for="employees" class="col-md-4 col-form-label text-md-right">{{ __('Specialist') }}</label>
                                 <div class="col-md-6">
                                     <select name="employees" onchange="" id="employees" class="form-control">
-                                        @foreach($employees as $employee)
-                                            @foreach($employee as $emp)
+
+                                            @foreach($employees as $emp)
                                                 <option value="{{$emp['id']}}">{{$emp['name']}}</option>
                                             @endforeach
-                                        @endforeach
+
                                     </select>
                                 </div>
                             </div>
@@ -144,7 +144,19 @@
 
                             <div class="form-group row mb-0 text-center">
                                 <div class="col-6">
+                                    <div class="form-group row">
+                                        <label for="discount" class="col-md-4 col-form-label text-md-right">{{ __('Discount') }}</label>
 
+                                        <div class="col-md-6">
+                                            <input id="discount" min="0" max="100" onchange="setDiscount(this)" type="number" class="form-control @error('discount') is-invalid @enderror" name="discount" value="{{$saleInvoice['discount']}}" autofocus>
+
+                                            @error('discount')
+                                            <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                            @enderror
+                                        </div>
+                                    </div>
                                     <div class="form-group row">
                                         <label for="customer" class="col-md-4 col-form-label text-md-right">{{ __('Customer') }}</label>
 
@@ -180,20 +192,27 @@
                                         <input class="text-center border-0 bg-transparent form-control text-danger font-weight-bold" onchange="setTwoNumberDecimal" type="number" name="total" min="1" step="0.25" value="0.00"  id="total"disabled>
                                     </div>
                                     <div class="align-center">
+                                        @if(\Illuminate\Support\Facades\Auth::user()->employee->jobTitle->edit_sale_invoices)
                                         <button type="submit" class="btn btn-primary mr-2 mt-5" onclick="create()">
-                                            {{ __('Update') }}
+                                            {{ __('Create') }}
                                         </button>
+                                        <button type="submit" class="btn btn-primary mr-2 mt-5" onclick="save()">
+                                            {{ __('Save') }}
+                                        </button>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
                         </form>
-                        <form action="{{route('sale_invoices.destroy',$saleInvoice)}}" method="POST">
+                        @if(\Illuminate\Support\Facades\Auth::user()->employee->jobTitle->delete_sale_invoices)
+                        <form action="{{route('sale_invoices.destroy',$saleInvoice)}}" method="POST" class="align-center">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-primary mt-5" >
+                            <button type="submit" class="btn btn-danger align-center">
                                 {{ __('Cancel') }}
                             </button>
                         </form>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -329,10 +348,9 @@
                     "</div>" +
                     "<input type='text' id='product"+(++prodCounter)+"' name='product"+prodCounter+"' value='"+type+array[i].id+"-"+array[i].price+"-"+array[i].quantity+"' hidden>"+
                     "</td>";
-                total+=(array[i].price)*(array[i].quantity);
                 invoice.innerHTML+="<tr>"+tr+"</tr>"
             }
-            setTotal();
+            calcTotal();
         }
 
         function deleteAllProducts() {
@@ -374,7 +392,19 @@
             invoice.innerHTML+="<input type='number' name='state' id='state' value='1' hidden >";
         }
 
+        function setDiscount(event) {
+            calcTotal()
 
+
+        }
+        function calcTotal() {
+            total=0
+            for(let i=0;i<array.length;i++){
+                total+=(array[i].price)*(array[i].quantity);
+            }
+            total-=total*(parseFloat(document.getElementById('discount').value)/100)
+            setTotal()
+        }
 
         function setTotal() {
             totalInput.setAttribute('value',total);

@@ -14,7 +14,19 @@
                         </div>
                     @endif
 
-                    {{ __('You are logged in!') }}
+
+                    <tr>
+                        <td class="font-weight-bold text-success">{{__('Today total sales').': '}}</td>
+                        <td colspan="4">
+                            <?php $total=0;?>
+                            @foreach(\App\Models\SaleInvoice::query()->where('created_at','>',date('Y-m-d'))->where('state','=','1')->get() as $saleInvoice)
+                                <?php $total+= $saleInvoice->total;?>
+                            @endforeach
+                            {{$total}}
+                        </td>
+                    </tr>
+
+
                 </div>
             </div>
         </div>

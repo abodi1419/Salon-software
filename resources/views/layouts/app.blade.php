@@ -38,12 +38,18 @@
 
 
 </head>
-<body class="" dir="rtl">
+<body class="" dir="rtl" lang="ar">
 <div id="app">
+    <?php
+    if(\Illuminate\Support\Facades\Auth::user())
+        $jobTitle = \Illuminate\Support\Facades\Auth::user()->employee->jobTitle;
+    ?>
     <nav class="navbar navbar-expand-md navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url('/') }}">
-                {{ __(config('app.name', 'Laravel')) }}
+                <img src="{{asset('storage/Narjis.jpeg')}}" class="rounded-circle" style="width: 70px; height: 70px" alt="">
+{{--                {{ __(config('app.name', 'Laravel')) }}--}}
+
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                 <span class="navbar-toggler-icon"></span>
@@ -53,41 +59,75 @@
                 <!-- Left Side Of Navbar -->
                 <ul class="navbar-nav text-white mr-auto">
                     @auth
+                        @if($jobTitle['view_employee']||$jobTitle['create_employee']||$jobTitle['edit_employee']||$jobTitle['delete_employee'])
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 {{__('Employees')}}
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                @if($jobTitle['create_employee'])
                                 <a class="dropdown-item" href="{{route('employees.create')}}">{{__('New employee')}}</a>
+                                @endif
+                                @if($jobTitle['view_employee'])
                                 <a class="dropdown-item" href="{{route('employees.index')}}">{{__('Show employees')}}</a>
+                                @endif
+                                @if($jobTitle['create_employee'])
                                 <a class="dropdown-item" href="{{asset('job_title/create')}}">{{ __('New job title') }}</a>
+                                @endif
+                                @if($jobTitle['view_employee'])
+                                    <a class="dropdown-item" href="{{route('employees.index')}}">{{__('Calculate commissions')}}</a>
+                                @endif
                             </div>
                         </li>
+                        @endif
+                        @if($jobTitle['create_product']||$jobTitle['view_product']||$jobTitle['edit_product']||$jobTitle['delete_product']||
+                                $jobTitle['create_service']||$jobTitle['view_service']||$jobTitle['edit_service']||$jobTitle['delete_service'])
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 {{__('Sales')}}
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                @if($jobTitle['create_service'])
                                 <a class="dropdown-item" href="{{route('services.create')}}">{{__('New service')}}</a>
+                                @endif
+                                @if($jobTitle['create_product'])
                                 <a class="dropdown-item" href="{{route('products.create')}}">{{__('New product')}}</a>
+                                @endif
+                                @if($jobTitle['view_service'])
                                 <a class="dropdown-item" href="{{asset('services')}}">{{__('Show services') }}</a>
+                                @endif
+                                @if($jobTitle['view_product'])
                                 <a class="dropdown-item" href="{{asset('products')}}">{{__('Show products') }}</a>
+                                @endif
                             </div>
                         </li>
+                            @endif
                         <li class="nav-item">
 
                         </li>
+                        @if($jobTitle['create_sale_invoices']||$jobTitle['view_sale_invoices']||$jobTitle['edit_sale_invoices']||$jobTitle['delete_sale_invoices']||
+                            $jobTitle['create_purchase_invoices']||$jobTitle['view_purchase_invoices']||$jobTitle['edit_purchase_invoices']||$jobTitle['delete_purchase_invoices'])
+
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 {{__('Invoices')}}
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                @if($jobTitle['create_sale_invoices'])
                                 <a class="dropdown-item" href="{{route('sale_invoices.create')}}">{{__('New sale invoice')}}</a>
+                                @endif
+                                @if($jobTitle['create_purchase_invoices'])
                                 <a class="dropdown-item" href="{{route('purchase_invoices.create')}}">{{__('New purchase invoice')}}</a>
+                                @endif
+                                @if($jobTitle['view_sale_invoices']||$jobTitle['edit_sale_invoices']||$jobTitle['delete_sale_invoices'])
                                 <a class="dropdown-item" href="{{asset('sale_invoices')}}">{{ __('Show sale invoices') }}</a>
+                                @endif
+                                @if($jobTitle['view_purchase_invoices']||$jobTitle['edit_purchase_invoices']||$jobTitle['delete_purchase_invoices'])
                                 <a class="dropdown-item" href="{{asset('purchase_invoices')}}">{{ __('Show purchase invoices') }}</a>
+                                @endif
                             </div>
                         </li>
+                        @endif
                     @endauth
                 </ul>
 
@@ -95,13 +135,16 @@
                 <ul class="navbar-nav ml-auto">
                     <!-- Authentication Links -->
                     @guest
+
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
                         </li>
-                        @if (Route::has('register'))
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                            </li>
+                        @if(\App\Models\Employee::all()->first()==null)
+                            @if (Route::has('register'))
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('employees.create') }}">{{ __('Register') }}</a>
+                                </li>
+                            @endif
                         @endif
                     @else
                         <li class="nav-item dropdown">

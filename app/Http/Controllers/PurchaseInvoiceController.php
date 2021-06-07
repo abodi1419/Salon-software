@@ -6,7 +6,7 @@ use App\Models\PurchaseInvoice;
 use Gate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use PDF;
 class PurchaseInvoiceController extends Controller
 {
     /**
@@ -27,8 +27,13 @@ class PurchaseInvoiceController extends Controller
     {
 
         if(Gate::allows('purchase_invoices',Auth::user())){
-            $purchaseInvoices = PurchaseInvoice::all();
-            return view('purchase_invoices.index', compact('purchaseInvoices'));
+            $appliedPurchaseInvoices = PurchaseInvoice::query()
+                ->where('state','=','1')->get();
+            $savedPurchaseInvoices = PurchaseInvoice::query()
+                ->where('state','=','0')->get();
+            $canceledPurchaseInvoices = PurchaseInvoice::query()
+                ->where('state','=','2')->get();
+            return view('purchase_invoices.index', compact('appliedPurchaseInvoices','savedPurchaseInvoices','canceledPurchaseInvoices'));
         }else{
             abort(401);
         }
@@ -62,15 +67,22 @@ class PurchaseInvoiceController extends Controller
                 'total'=>['numeric','required'],
                 'vendor' => ['max:255'],
             ]);
+            $subtotal=0;
             $products=array();
             foreach ($request->all() as $requestValue){
                 if(substr( $requestValue, 0, 3 ) === 'p_-' ){
                     $splited = explode('-',$requestValue);
                     array_push($products, ['product_id'=>$splited[1],'price'=>$splited[2],'quantity'=>$splited[3]]);
+                    $subtotal+=$splited[2]*$splited[3];
                     //array_push($products,['product_id'=>$splited[1],'price'=>$splited[2],'quantity'=>$splited[3]]);
                 }
             }
-            $invoice = Auth::user()->purchaseInvoices()->create($request->all());
+            $total = $subtotal-$subtotal*($request['discount']/100);
+            if($total!=$request['total']){
+                return redirect()->back()->withErrors([__('Something went wrong!')]);
+            }
+
+            $invoice = Auth::user()->purchaseInvoices()->create($request->all()+['sub_total'=>$subtotal]);
             foreach ($products as $product){
                 $purchase = $invoice->purchases()->create($product);
                 $newQuantity = $purchase->product['quantity']+$purchase['quantity'];
@@ -92,7 +104,10 @@ class PurchaseInvoiceController extends Controller
      */
     public function show(PurchaseInvoice $purchaseInvoice)
     {
-        //
+        $pdf = PDF::loadView('frontend.purchaseInvoicePdf',compact('purchaseInvoice'));
+        $pdf->getMpdf()->charset_in='UTF-8';
+
+        $pdf->stream('storage/purchaseInvoices/invoice'.$purchaseInvoice['id'].'.pdf');
     }
 
     /**
@@ -127,12 +142,19 @@ class PurchaseInvoiceController extends Controller
                 'vendor' => ['max:255'],
             ]);
             $products=array();
+            $subtotal=0;
             foreach ($request->all() as $requestValue){
                 if(substr( $requestValue, 0, 3 ) === 'p_-' ) {
                     $splited = explode('-', $requestValue);
                     array_push($products, ['product_id' => $splited[1], 'price' => $splited[2], 'quantity' => $splited[3]]);
+                    $subtotal+=$splited[2]*$splited[3];
                 }
             }
+            $total = $subtotal-$subtotal*($request['discount']/100);
+            if($total!=$request['total']){
+                return redirect()->back()->withErrors([__('Something went wrong!')]);
+            }
+
             $productsInPurchases = $purchaseInvoice->purchases()->get();
 
             for ($i=0;$i<count($purchaseInvoice->purchases);$i++){
@@ -170,13 +192,23 @@ class PurchaseInvoiceController extends Controller
     public function destroy(PurchaseInvoice $purchaseInvoice)
     {
         if(Gate::allows('purchase_invoices_delete',Auth::user())){
-            $productsInPurchases = $purchaseInvoice->purchases()->get();
-            for ($i=0;$i<count($purchaseInvoice->purchases);$i++){
-                $product = $productsInPurchases[$i]->product;
-                $product->quantity-=$productsInPurchases[$i]->quantity;
-                $product->save();
+            if($purchaseInvoice['state']==0) {
+                $productsInPurchases = $purchaseInvoice->purchases()->get();
+                for ($i = 0; $i < count($purchaseInvoice->purchases); $i++) {
+                    $product = $productsInPurchases[$i]->product;
+                    $product->quantity -= $productsInPurchases[$i]->quantity;
+                    $product->save();
+                }
+                $purchaseInvoice->delete();
+            }else{
+                $productsInPurchases = $purchaseInvoice->purchases()->get();
+                for ($i = 0; $i < count($purchaseInvoice->purchases); $i++) {
+                    $product = $productsInPurchases[$i]->product;
+                    $product->quantity -= $productsInPurchases[$i]->quantity;
+                    $product->save();
+                }
+                $purchaseInvoice->update(['state'=>2]);
             }
-            $purchaseInvoice->delete();
             return redirect('purchase_invoices');
         }else{
             abort(401);

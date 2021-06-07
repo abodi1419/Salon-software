@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Service;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Gate;
 
 class ServiceController extends Controller
 {
@@ -12,8 +14,18 @@ class ServiceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
     public function index()
     {
+
+
+
+        if(!Gate::allows('service',Auth::user())){
+
+        }
         $services = Service::all();
         return view('services.index',compact('services'));
     }
@@ -25,6 +37,9 @@ class ServiceController extends Controller
      */
     public function create()
     {
+        if(!Gate::allows('service_create',Auth::user())){
+            abort(401);
+        }
         return view('services.create');
     }
 
@@ -36,6 +51,9 @@ class ServiceController extends Controller
      */
     public function store(Request $request)
     {
+        if(!Gate::allows('service_create',Auth::user())){
+            abort(401);
+        }
         $request->validate([
             'name' => ['required','string','max:255'],
             'price' => ['required','numeric']
@@ -65,6 +83,9 @@ class ServiceController extends Controller
      */
     public function edit(Service $service)
     {
+        if(!Gate::allows('service_edit',Auth::user())){
+            abort(401);
+        }
         return view('services.edit',compact('service'));
     }
 
@@ -77,6 +98,9 @@ class ServiceController extends Controller
      */
     public function update(Request $request, Service $service)
     {
+        if(!Gate::allows('service_edit',Auth::user())){
+            abort(401);
+        }
         $request->validate([
             'name' => ['required','string','max:255'],
             'price' => ['required','numeric']
@@ -93,6 +117,9 @@ class ServiceController extends Controller
      */
     public function destroy(Service $service)
     {
+        if(!Gate::allows('service_delete',Auth::user())){
+            abort(401);
+        }
         $service->delete();
         return redirect()->back();
     }

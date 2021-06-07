@@ -20,6 +20,8 @@ class CreateSaleInvoicesTable extends Migration
             $table->foreign('user_id')->references('id')->on('users');
             $table->text('notes')->nullable();
             $table->tinyInteger('state');
+            $table->unsignedInteger('discount')->default(0);
+            $table->unsignedInteger('counter')->default(0);
             $table->decimal('sub_total')->nullable();
             $table->decimal('total');
             $table->timestamps();

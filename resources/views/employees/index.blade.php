@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
     <h4>{{__('Employees')}}</h4>
 
     <div class="card p-3">
@@ -57,6 +58,26 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+    <div class="card p-3">
+        <div class="card-header"><h3>{{__("Calculate commissions")}}</h3></div>
+        <div class="card-body">
+            <form action="{{asset('employees/calc_commissions')}}" method="post">
+                @csrf
+                <div class="form-group">
+                    <label for="start">{{__('Start date')}}</label>
+                    <input type="date" class="form-control" id="start" name="start" required>
+                </div>
+                <div class="form-group">
+                    <label for="end">{{__('End date')}}</label>
+                    <input type="date" class="form-control" id="end" name="end" required>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" type="submit">{{__('Show')}}</button>
+                </div>
+
+            </form>
         </div>
     </div>
 @endsection

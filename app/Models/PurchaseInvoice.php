@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class PurchaseInvoice extends Model
 {
     use HasFactory;
-    protected $fillable = ['user_id','vendor','sub_total','total','notes','state'];
+    protected $fillable = ['user_id','vendor','sub_total','total','notes','state','discount'];
     public function purchases()
     {
         return $this->hasMany(Purchase::class,'purchase_invoice_id',"id");

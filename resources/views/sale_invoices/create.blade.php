@@ -10,7 +10,6 @@
                     <div class="card-header">{{ __('New sale invoice') }}</div>
 
                     <div class="card-body">
-                        <label for="">{!!__('Invoice number').": <span class='text-success font-weight-bold'>".$invoicesCounter."</span>" !!}</label>
                         <div class="mb-3">
                             <div class="form-group row">
                                 <label for="product/service" class="col-md-4 col-form-label text-md-right">{{ __('Service/Product') }}</label>
@@ -42,16 +41,23 @@
                                             <option value="{{$service['id']}}">{{$service['name']}}</option>
                                         @endforeach
                                     </select>
+                                    <label id="service-note"></label>
+                                    <br>
                                 </div>
+                                <br>
                                 <label for="employees" class="col-md-4 col-form-label text-md-right">{{ __('Specialist') }}</label>
-                                <div class="col-md-6">
-                                    <select name="employees" onchange="" id="employees" class="form-control">
-                                        @foreach($employees as $employee)
-                                            @foreach($employee as $emp)
-                                                <option value="{{$emp['id']}}">{{$emp['name']}}</option>
-                                            @endforeach
-                                        @endforeach
-                                    </select>
+                                <div class="col-md-6 text-center w-100">
+
+                                            @foreach($employees as $emp)
+                                            <div class="form-check-inline font-weight-bold">
+                                                <label for="{{$emp['id']}}" class="form-check-label">
+                                                    <input type="radio" class="form-check-input" name="employee" id="{{$emp['id']}}" value="{{$emp['name']}}">
+                                                    {{$emp['name']}}
+                                                </label>
+                                            </div>
+                                @endforeach
+
+
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -77,8 +83,10 @@
                         </div>
                         <form method="POST" id="invoice_form" action="{{ route('sale_invoices.store') }}">
                             @csrf
-
-
+                            <div class="form-group">
+                                <label for="counter">{{__('Invoice number')}}</label>
+                                <input type="number" id="counter" class="border-1 text-success" value="{{$invoicesCounter}}" name="counter" disabled>
+                            </div>
 
                             <div class="table-responsive">
                                 <table class="table table-striped border">
@@ -131,7 +139,19 @@
 
                             <div class="form-group row mb-0 text-center">
                                 <div class="col-6">
+                                    <div class="form-group row">
+                                        <label for="discount" class="col-md-4 col-form-label text-md-right">{{ __('Discount') }}</label>
 
+                                        <div class="col-md-6">
+                                            <input id="discount" min="0" max="100" onchange="setDiscount(this)" type="number" class="form-control @error('discount') is-invalid @enderror" name="discount" value="{{0 }}" autofocus>
+
+                                            @error('discount')
+                                            <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                            @enderror
+                                        </div>
+                                    </div>
                                     <div class="form-group row">
                                         <label for="customer" class="col-md-4 col-form-label text-md-right">{{ __('Customer') }}</label>
 
@@ -206,15 +226,26 @@
             var price = document.getElementById('price').value;
             var products =null
             var product;
-            let specialist = "<td></td>";
+            let specialists = "<td></td>";
             let value = document.getElementById('product/service').value;
             if(value==0){
-                specialist = document.getElementById("employees")
-                let specialistName = specialist.options[specialist.selectedIndex].text;
-                let specialistId = specialist.value;
+                specialists = document.querySelectorAll('input[name="employee"]');
+                let specialistId;
+                let specialistName;
+                for (let specialist of specialists){
+                    if(specialist.checked){
+                        specialistName = specialist.value;
+                        specialistId = specialist.id;
+                    }
+                }
+
+
                 products = document.getElementById('services');
                 let productName = products.options[products.selectedIndex].text;
                 let productId = products.value;
+                if (productId<1||productName==null||specialistId==null||specialistName==null){
+                    return;
+                }
                 product = new Product(productName,productId,quantity,price,specialistName,specialistId,value);
             }else {
                 products = document.getElementById('products');
@@ -277,10 +308,9 @@
                     "</div>" +
                     "<input type='text' id='product"+(++prodCounter)+"' name='product"+prodCounter+"' value='"+type+array[i].id+"-"+array[i].price+"-"+array[i].quantity+"' hidden>"+
                     "</td>";
-                total+=(array[i].price)*(array[i].quantity);
                 invoice.innerHTML+="<tr>"+tr+"</tr>"
             }
-            setTotal();
+            calcTotal();
         }
         function deleteAllProducts() {
             invoice.innerHTML=generateBasicRows();
@@ -288,13 +318,28 @@
             counter=1;
             setTotal();
         }
+        function setDiscount(event) {
+            calcTotal()
+
+
+        }
+        function calcTotal() {
+            total=0
+            for(let i=0;i<array.length;i++){
+                total+=(array[i].price)*(array[i].quantity);
+            }
+            total-=total*(parseFloat(document.getElementById('discount').value)/100)
+            setTotal()
+        }
         function save() {
             totalInput.disabled=false;
             invoice.innerHTML+="<input type='number' name='state' id='state' value=0 hidden>";
         }
         function create() {
+            calcTotal();
             totalInput.disabled=false;
             invoice.innerHTML+="<input type='number' name='state' id='state' value='1' hidden >";
+            document.getElementById('counter').disabled=false;
         }
 
 
@@ -335,7 +380,9 @@
 
             for (let i=0; i<services.length; i++) {
                 if(services[i]['id']==event.value){
+
                     price.setAttribute('value',services[i]['price']);
+                    document.getElementById('service-note').innerText = services[i]['notes'];
                     return;
                 }
             }
@@ -346,7 +393,7 @@
         function setProductPrice(event){
 
             var price = document.getElementById('price');
-            var products= <?php echo $s_to_json ?>;
+            var products= <?php echo $p_to_json ?>;
 
             for (let i=0; i<products.length; i++) {
                 console.log(products[i]['id']);

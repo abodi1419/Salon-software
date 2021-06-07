@@ -57,20 +57,96 @@ class AuthServiceProvider extends ServiceProvider
                 return false;
         });
 
-        Gate::define('sale_invoices_edit',function ($jobTitle){
-            if($jobTitle['edit_sale_invoices']==1){
+        Gate::define('sale_invoices_edit',function ($user){
+            if($user->employee->jobTitle['edit_sale_invoices']==1){
                 return true;
             }else
                 return false;
         });
-        Gate::define('sale_invoices_delete',function ($jobTitle){
-            if($jobTitle['delete_sale_invoices']==1){
+        Gate::define('sale_invoices_delete',function ($user){
+            if($user->employee->jobTitle['delete_sale_invoices']==1){
                 return true;
             }else
                 return false;
         });
-        Gate::define('sale_invoices_create',function ($jobTitle){
-            if($jobTitle['create_sale_invoices']==1){
+        Gate::define('sale_invoices_create',function ($user){
+            if($user->employee->jobTitle['create_sale_invoices']==1){
+                return true;
+            }else
+                return false;
+        });
+
+
+        Gate::define('product',function ($user){
+            if($user->employee->jobTitle['view_product']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('product_edit',function ($user){
+            if($user->employee->jobTitle['edit_product']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('product_delete',function ($user){
+            if($user->employee->jobTitle['delete_product']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('product_create',function ($user){
+            if($user->employee->jobTitle['create_product']==1){
+                return true;
+            }else
+                return false;
+        });
+
+        Gate::define('service',function ($user){
+            if($user->employee->jobTitle['view_service']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('service_edit',function ($user){
+            if($user->employee->jobTitle['edit_service']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('service_delete',function ($user){
+            if($user->employee->jobTitle['delete_service']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('service_create',function ($user){
+            if($user->employee->jobTitle['create_service']==1){
+                return true;
+            }else
+                return false;
+        });
+
+        Gate::define('employee',function ($user){
+            if($user->employee->jobTitle['view_employee']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('employee_edit',function ($user){
+            if($user->employee->jobTitle['edit_employee']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('employee_delete',function ($user){
+            if($user->employee->jobTitle['delete_employee']==1){
+                return true;
+            }else
+                return false;
+        });
+        Gate::define('employee_create',function ($user){
+            if($user->employee->jobTitle['create_employee']==1){
                 return true;
             }else
                 return false;

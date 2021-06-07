@@ -18,4 +18,7 @@ class Employee extends Model
     public function user(){
         return $this->hasOne(User::class);
     }
+    public function saleServices(){
+        return $this->hasMany(SaleService::class);
+    }
 }
